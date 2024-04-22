@@ -29,7 +29,7 @@ Log out of Instance and Log back in
 
 $ conda activate pytorch
 
-$ git clone https://github.com/gen-ai-trainings/ft-lab && cd ft-lab
+$ git clone https://github.com/henjohn2/genai-bootcamp-curriculum
 
 $ docker compose up -d 
 
