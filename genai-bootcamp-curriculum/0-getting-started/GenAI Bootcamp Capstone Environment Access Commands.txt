@@ -29,12 +29,11 @@ Log out of Instance and Log back in
 
 $ conda activate pytorch
 
-$ git clone https://github.com/henjohn2/genai-bootcamp-curriculum
+$ git clone https://github.com/henjohn2/genai-bootcamp-curriculum && cd genai-bootcamp-curriculum
 
 $ docker compose up -d 
 
-$ cd llm && pip install -r requirements.txt && bash install_flash_attention2.sh 
-
+$ cd 2-capstone && pip install -r requirements.txt && bash install_flash_attention2.sh 
 
 Part 2 - Keeping a Jupyter Lab Instance Alive in Background
 
