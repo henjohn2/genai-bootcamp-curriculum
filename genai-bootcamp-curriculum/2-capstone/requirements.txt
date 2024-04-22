@@ -1,0 +1,17 @@
+transformers==4.37.2
+datasets
+peft==0.8.2
+accelerate
+bitsandbytes
+trl
+safetensors
+lm-eval
+gradio
+flask
+pgvector
+sentence-transformers
+langchain
+psycopg2-binary
+tiktoken
+openai
+pypdf
