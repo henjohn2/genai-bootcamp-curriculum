@@ -60,15 +60,14 @@ function install_python_tools {
     pip install --verbose flash-attn --no-build-isolation
 }
 
-
 # Clone and set up the course repository
 function setup_repository {
     REPO_DIR="$HOME/genai-bootcamp-curriculum"
     if [ ! -d "$REPO_DIR" ]; then
         git clone https://github.com/henjohn2/genai-bootcamp-curriculum.git $REPO_DIR
-	git checkout improvements
     fi
     cd $REPO_DIR
+    git checkout improvements
     local env_file="environment.yml"
     if [ "$use_locked_env" = "yes" ]; then
         env_file="locked-environment.yml"
@@ -105,56 +104,25 @@ function update_jupyter_config {
     fi
 }
 
-# # Start Jupyter Lab in a detached tmux session
-# function start_jupyter {
-#     update_jupyter_config
-#     tmux new-session -d -s jupyter "source $HOME/miniconda/bin/activate course-env; jupyter lab --ip=0.0.0.0 --no-browser --log-level=INFO"
-#     sleep 10  # Wait for Jupyter to start
-#     jupyter_token=$(tmux capture-pane -p -t jupyter | grep -oP 'token=\K[\w]+')
-#     if [ -z "$jupyter_token" ]; then
-#         echo "Failed to capture Jupyter Lab token."
-#         exit 1
-#     else
-#         public_hostname=$(curl -s --max-time 2 http://169.254.169.254/latest/meta-data/public-hostname)
-#         if [ -z "$public_hostname" ]; then
-#             public_hostname="not-on-ec2"
-#         fi
-#         echo "Jupyter Lab is accessible at: http://$public_hostname:8888/lab?token=$jupyter_token"
-#         echo "http://$public_hostname:8888/lab?token=$jupyter_token" > "$HOME/jupyter_access.txt"
-#         if [ -n "$COMPANY_S3" ]; then
-#             aws s3 cp "$HOME/jupyter_access.txt" "s3://$COMPANY_S3/jupyter_access.txt"
-#         fi
-#     fi
-# }
-
 # Start Jupyter Lab in a detached tmux session
 function start_jupyter {
     update_jupyter_config
     tmux new-session -d -s jupyter "source $HOME/miniconda/bin/activate course-env; jupyter lab --ip=0.0.0.0 --no-browser --log-level=INFO"
     sleep 10  # Wait for Jupyter to start
+    jupyter_token=$(tmux capture-pane -p -t jupyter | grep -oP '(?<=token=)[a-fA-F0-9]+')
 
-    # Capture Jupyter Lab token from tmux session
-    # jupyter_token=$(tmux capture-pane -p -t jupyter | grep -oP 'token=\K[\w]+')
-    jupyter_token=$(tmux capture-pane -p -t jupyter | grep -oP 'token=\K[a-fA-F0-9]{40,}')
     if [ -z "$jupyter_token" ]; then
         echo "Failed to capture Jupyter Lab token."
         exit 1
     else
-        # Get the public or local hostname
         public_hostname=$(curl -s --max-time 2 http://169.254.169.254/latest/meta-data/public-hostname)
         if [ -z "$public_hostname" ]; then
             public_hostname="localhost"
         fi
-
-        # Construct the access URL
         access_url="http://$public_hostname:8888/lab?token=$jupyter_token"
         echo "Jupyter Lab is accessible at: $access_url"
-        
-        # Save the access URL to a unique file based on the hostname
         filename="$HOME/${public_hostname}.txt"
         echo "Access URL: $access_url" > "$filename"
-
-        # Upload the file to S3 bucket with a unique filename based on the hostname
         if [ -n "$COMPANY_S3" ]; then
             aws s3 cp "$filename" "s3://$COMPANY_S3/${public_hostname}.txt"
         fi
