@@ -1,0 +1,16 @@
+# Ignoring files and directories related to Miniconda installation
+Miniconda3-latest-Linux-x86_64.sh  # assuming it's downloaded with this name
+
+# Ignore company specific configurations
+company.yml
+
+# Ignore all data files
+data/*
+
+# Ignore specific model directories
+**/mistral-7b/
+**/all-MiniLM-L6-v2/
+
+# Ignore Python cache directories
+**/__pycache__/
+

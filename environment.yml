@@ -1,0 +1,32 @@
+name: course-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - numpy
+  - sqlalchemy
+  - psycopg2-binary
+  - flask
+  - ipykernel
+  - jupyterlab
+  - ipywidgets
+  - pgvector  
+  - pip:
+    - torch
+    - transformers
+    - datasets
+    - peft
+    - accelerate
+    - bitsandbytes
+    - trl
+    - safetensors
+    - lm-eval
+    - gradio
+    - sentence-transformers
+    - langchain
+    - langchain-core
+    - pypdf
+    - packaging
+    - ninja
+    - huggingface_hub
