@@ -85,7 +85,8 @@ function download_data {
     if [ -n "$COMPANY_S3" ] && [ -n "$TASK" ]; then
         local target_path="$HOME/genai-bootcamp-curriculum/data/${TASK,,}"
         mkdir -p "$target_path"
-        aws s3 cp "s3://$COMPANY_S3/$TASK" "$target_path" --recursive
+        # aws s3 cp "s3://$COMPANY_S3/$TASK" "$target_path" --recursive
+        aws s3 cp "s3://$COMPANY_S3/" "$target_path" --recursive # current the AWS dataset does not have a task folder
     fi
 }
 
@@ -123,12 +124,19 @@ function start_jupyter {
         if [ -z "$public_hostname" ]; then
             public_hostname="localhost"
         fi
-        access_url="http://$public_hostname:8888/lab?token=$jupyter_token"
+                access_url="http://$public_hostname:8888/lab?token=$jupyter_token"
         echo "Jupyter Lab is accessible at: $access_url"
-        filename="$HOME/${public_hostname}.txt"
-        echo "Access URL: $access_url" > "$filename"
+        
+        # Prepare file with additional details
+        filename="$HOME/${public_hostname}_access_details.txt"
+        echo "DNS: $public_hostname" > "$filename"
+        echo "Username: ubuntu" >> "$filename"
+        echo "Access Token: $jupyter_token" >> "$filename"
+        echo "Access URL: $access_url" >> "$filename"
+        
+        # Upload to S3 if the bucket variable is set
         if [ -n "$COMPANY_S3" ]; then
-            aws s3 cp "$filename" "s3://$COMPANY_S3/${public_hostname}.txt"
+            aws s3 cp "$filename" "s3://$COMPANY_S3/${public_hostname}_access_details.txt"
         fi
     fi
 }
