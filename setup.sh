@@ -1,7 +1,8 @@
 #!/bin/bash
-# Do not modify the script below. It is used to set up the environment for the course.
-# Default settings
-use_locked_env="yes"  # Default to use the locked environment
+# This script is tailored for setup on an Amazon EC2 Ubuntu instance.
+
+# Absolute path to the Conda executable
+CONDA_PATH="$HOME/miniconda/bin/conda"
 
 # Function to parse command-line options
 function parse_args {
@@ -13,7 +14,7 @@ function parse_args {
     done
 }
 
-# Load company-specific information from company.yml if it exists
+# Load company-specific configurations from company.yml if it exists
 function setup_env_variables {
     COMPANY_FILE="company.yml"
     if [ -f "$COMPANY_FILE" ]; then
@@ -27,7 +28,8 @@ function setup_env_variables {
 function update_system {
     sudo apt-get update
     sudo apt-get install -y curl unzip wget git
-    # Install AWS CLI if not installed
+
+    # Install AWS CLI if not present
     if ! command -v aws &> /dev/null; then
         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
         unzip awscliv2.zip
@@ -36,61 +38,104 @@ function update_system {
     fi
 }
 
+# Install Python tools and environment
 function install_python_tools {
     if [ ! -d "$HOME/miniconda" ]; then
         wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh
         bash Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda
         rm Miniconda3-latest-Linux-x86_64.sh
     fi
-    export PATH="$HOME/miniconda/bin:$PATH"
-    source $HOME/miniconda/bin/activate
-    conda activate course-env  # Make sure to activate the environment
+    
+    # Initialize Conda for the shell
+    $CONDA_PATH init bash
+    source $HOME/.bashrc # Assuming the default shell is bash
 
-    if ! command -v conda &> /dev/null; then
-        echo "Conda installation failed or Conda executable not found in PATH."
+    # Define the paths to the environment files
+    local env_file="$HOME/genai-bootcamp-curriculum/environment.yml"
+    if [ "$use_locked_env" = "yes" ]; then
+        env_file="$HOME/genai-bootcamp-curriculum/locked-environment.yml"
+    fi
+    local env_name="course-env"
+    
+    # Create or update the Conda environment
+    if $CONDA_PATH env list | grep -qw "$env_name"; then
+        echo "Updating existing Conda environment: $env_name"
+        $CONDA_PATH env update -n $env_name -f $env_file
+    else
+        echo "Creating new Conda environment: $env_name"
+        if $CONDA_PATH env create -f $env_file; then
+            echo "Environment $env_name created successfully."
+        else
+            echo "Failed to create Conda environment. Please check the environment file."
+            return 1
+        fi
+    fi
+
+    # Activate the Conda environment
+    source $HOME/miniconda/bin/activate $env_name
+    if [ $? -ne 0 ]; then
+        echo "Failed to activate Conda environment: $env_name"
         exit 1
     fi
 
-    conda install ipykernel --yes
-    python -m ipykernel install --user --name course-env --display-name "Python 3.12 (course-env)"
-    
-    # Ensure all Conda operations are done before using pip
-    conda install torch  --yes # Ensure torch is installed
+    # Additional Python packages installations
+    $CONDA_PATH install ipykernel --yes
+    python -m ipykernel install --user --name $env_name --display-name "Python 3.12 ($env_name)"
+    $CONDA_PATH install torch --yes
     pip install packaging ninja
     pip install --verbose flash-attn --no-build-isolation
 }
 
-# Clone and set up the course repository
+
+
+# Clone and setup a course repository
 function setup_repository {
     REPO_DIR="$HOME/genai-bootcamp-curriculum"
     if [ ! -d "$REPO_DIR" ]; then
+        echo "Cloning the repository..."
         git clone https://github.com/henjohn2/genai-bootcamp-curriculum.git $REPO_DIR
     fi
+
     cd $REPO_DIR
     git checkout improvements
+
     local env_file="environment.yml"
     if [ "$use_locked_env" = "yes" ]; then
         env_file="locked-environment.yml"
     fi
     local env_name="course-env"
-    if conda env list | grep -qw "$env_name"; then
-        conda env update -n $env_name -f $env_file
+
+    if ! type $CONDA_PATH >/dev/null 2>&1; then
+        echo "Conda is not available. Attempting to initialize Conda..."
+        $CONDA_PATH init bash
+        echo "Please restart your terminal or source the appropriate shell configuration file."
+        return 1
+    fi
+
+    if $CONDA_PATH env list | grep -qw "$env_name"; then
+        echo "Updating existing Conda environment: $env_name"
+        $CONDA_PATH env update -n $env_name -f $env_file
     else
-        conda env create -f $env_file
+        echo "Creating new Conda environment: $env_name"
+        if $CONDA_PATH env create -f $env_file; then
+            echo "Environment $env_name created successfully."
+        else
+            echo "Failed to create Conda environment. Please check the environment file."
+            return 1
+        fi
     fi
 }
 
-# Download data from S3 based on TASK
+# Download data from S3
 function download_data {
     if [ -n "$COMPANY_S3" ] && [ -n "$TASK" ]; then
         local target_path="$HOME/genai-bootcamp-curriculum/data/${TASK,,}"
         mkdir -p "$target_path"
-        # aws s3 cp "s3://$COMPANY_S3/$TASK" "$target_path" --recursive
-        aws s3 cp "s3://$COMPANY_S3/" "$target_path" --recursive # current the AWS dataset does not have a task folder
+        aws s3 cp "s3://$COMPANY_S3/" "$target_path" --recursive
     fi
 }
 
-# Update Jupyter configuration to use the custom environment
+# Update Jupyter configuration
 function update_jupyter_config {
     JUPYTER_CONFIG_DIR="$HOME/.jupyter"
     mkdir -p $JUPYTER_CONFIG_DIR
@@ -108,13 +153,9 @@ function update_jupyter_config {
 # Start Jupyter Lab in a detached tmux session
 function start_jupyter {
     update_jupyter_config
-    # Generate the token manually
     jupyter_token=$(openssl rand -hex 32)
-
-    # Start Jupyter Lab with the generated token
     tmux new-session -d -s jupyter "source $HOME/miniconda/bin/activate course-env; jupyter lab --ip=0.0.0.0 --no-browser --log-level=INFO --NotebookApp.token='$jupyter_token'"
-    sleep 10  # Wait for Jupyter to start
-
+    sleep 10
 
     if [ -z "$jupyter_token" ]; then
         echo "Failed to capture Jupyter Lab token."
@@ -124,37 +165,30 @@ function start_jupyter {
         if [ -z "$public_hostname" ]; then
             public_hostname="localhost"
         fi
-                access_url="http://$public_hostname:8888/lab?token=$jupyter_token"
+        access_url="http://$public_hostname:8888/lab?token=$jupyter_token"
         echo "Jupyter Lab is accessible at: $access_url"
         
-        # Prepare file with additional details
         filename="$HOME/${public_hostname}_access_details.txt"
         echo "DNS: $public_hostname" > "$filename"
         echo "Username: ubuntu" >> "$filename"
         echo "Access Token: $jupyter_token" >> "$filename"
         echo "Access URL: $access_url" >> "$filename"
         
-        # Upload to S3 if the bucket variable is set
         if [ -n "$COMPANY_S3" ]; then
             aws s3 cp "$filename" "s3://$COMPANY_S3/${public_hostname}_access_details.txt"
         fi
     fi
 }
 
-# Start Docker Compose services
-function start_docker {
-    docker compose up -d
-}
-
-# Main execution function
+# Main function to run all setups
 function main {
+    parse_args "$@"
     setup_env_variables
     update_system
     install_python_tools
     setup_repository
     download_data
     start_jupyter
-    start_docker
 }
 
-main
+main "$@"
