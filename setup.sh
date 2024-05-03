@@ -107,9 +107,13 @@ function update_jupyter_config {
 # Start Jupyter Lab in a detached tmux session
 function start_jupyter {
     update_jupyter_config
-    tmux new-session -d -s jupyter "source $HOME/miniconda/bin/activate course-env; jupyter lab --ip=0.0.0.0 --no-browser --log-level=INFO"
+    # Generate the token manually
+    jupyter_token=$(openssl rand -hex 32)
+
+    # Start Jupyter Lab with the generated token
+    tmux new-session -d -s jupyter "source $HOME/miniconda/bin/activate course-env; jupyter lab --ip=0.0.0.0 --no-browser --log-level=INFO --NotebookApp.token='$jupyter_token'"
     sleep 10  # Wait for Jupyter to start
-    jupyter_token=$(tmux capture-pane -p -t jupyter | grep -oP '(?<=token=)[a-fA-F0-9]+')
+
 
     if [ -z "$jupyter_token" ]; then
         echo "Failed to capture Jupyter Lab token."
