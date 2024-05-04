@@ -1,12 +1,11 @@
 #!/bin/bash
-# This script is tailored for setup on an Amazon EC2 Ubuntu instance.
-# HOME="/home/ubuntu"
-# cd $HOME
+# This script is tailored for general setup from the repository.
+
 # Absolute path to the Conda executable
 CONDA_PATH="$HOME/miniconda/bin/conda"
 cd $HOME
 #use the packages that are already resolved
-use_locked_env="yes"
+use_locked_env="no"
 
 
 # Function to parse command-line options
