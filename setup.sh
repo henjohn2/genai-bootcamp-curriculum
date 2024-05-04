@@ -1,7 +1,7 @@
 #!/bin/bash
 # This script is tailored for setup on an Amazon EC2 Ubuntu instance.
-HOME="/home/ubuntu"
-cd $HOME
+# HOME="/home/ubuntu"
+# cd $HOME
 # Absolute path to the Conda executable
 CONDA_PATH="$HOME/miniconda/bin/conda"
 
