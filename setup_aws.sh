@@ -12,6 +12,7 @@ function run_as_user {
     sudo -u $user "$@"
 }
 
+
 # Parse command-line options
 function parse_args {
     while getopts ":u:" opt; do
@@ -67,7 +68,7 @@ function install_python_tools {
 
     run_as_user $DEFAULT_USER $CONDA_PATH env update -n $env_name -f $env_file || run_as_user $DEFAULT_USER $CONDA_PATH env create -f $env_file
     # run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name; $CONDA_PATH install ipykernel --yes; python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)'; $CONDA_PATH install torch --yes; pip install packaging ninja; MAX_JOBS=2 pip install --verbose flash-attn --no-build-isolation"
-    run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name; $CONDA_PATH install ipykernel --yes; python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)'; $CONDA_PATH install torch --yes; pip install packaging ninja; pip install --verbose flash_attn-2.5.8-cp312-cp312-linux_x86_64.whl --no-build-isolation"
+    run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name && $CONDA_PATH install ipykernel --yes && python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)' && $CONDA_PATH install torch --yes && pip install packaging ninja && pip install --verbose /home/$DEFAULT_USER/genai-bootcamp-curriculum/flash_attn-2.5.8-cp312-cp312-linux_x86_64_aws.whl --no-build-isolation"
 }
 
 # Clone and setup a course repository
@@ -104,7 +105,7 @@ function start_jupyter {
     fi
 
     local jupyter_token=$(run_as_user $DEFAULT_USER openssl rand -hex 32)
-    run_as_user $DEFAULT_USER tmux new-session -d -s jupyter "source /home/$DEFAULT_USER/miniconda/bin/activate course-env; jupyter lab --ip=0.0.0.0 --no-browser --log-level=INFO --NotebookApp.token='$jupyter_token'"
+    run_as_user $DEFAULT_USER tmux new-session -d -s jupyter "cd /home/$DEFAULT_USER/genai-bootcamp-curriculum/ && source /home/$DEFAULT_USER/miniconda/bin/activate course-env && jupyter lab --ip=0.0.0.0 --no-browser --log-level=INFO --NotebookApp.token='$jupyter_token'"
     sleep 10
 
     local public_hostname=$(curl -s --max-time 2 http://169.254.169.254/latest/meta-data/public-hostname)
