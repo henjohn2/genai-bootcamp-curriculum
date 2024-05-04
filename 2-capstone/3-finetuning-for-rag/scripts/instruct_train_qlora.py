@@ -10,6 +10,7 @@ from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 from trl import SFTTrainer
 import torch
 
+
 def load_modified_dataset() -> Dataset:
     """
     Load a dataset from Hugging Face Hub, filter by specified categories, and prepare for training.
@@ -29,6 +30,7 @@ def load_modified_dataset() -> Dataset:
         preserve_index=False,
     )
 
+
 def format_instruction(sample: dict) -> str:
     """
     Format each dataset sample into a string structured specifically for the language model.
@@ -40,6 +42,7 @@ def format_instruction(sample: dict) -> str:
         str: A formatted string that structures context, instruction, and response for training.
     """
     return f"""### Context:\n{sample['context']}\n\n### Question:\nUsing only the context above, {sample['instruction']}\n\n### Response:\n{sample['response']}\n"""
+
 
 # Load and prepare dataset
 dataset = load_modified_dataset()
@@ -58,7 +61,13 @@ peft_config = LoraConfig(
     bias="none",
     task_type="CAUSAL_LM",
     target_modules=[
-        "v_proj", "down_proj", "up_proj", "o_proj", "q_proj", "gate_proj", "k_proj"
+        "v_proj",
+        "down_proj",
+        "up_proj",
+        "o_proj",
+        "q_proj",
+        "gate_proj",
+        "k_proj",
     ],
 )
 bnb_config = BitsAndBytesConfig(
@@ -72,7 +81,7 @@ model = AutoModelForCausalLM.from_pretrained(
     low_cpu_mem_usage=True,
     torch_dtype=torch.float16,
     quantization_config=bnb_config,
-    use_flash_attention_2=True,
+    attn_implementation="flash_attention_2",
 )
 model = prepare_model_for_kbit_training(model)
 model = get_peft_model(model, peft_config)
@@ -84,7 +93,7 @@ args = TrainingArguments(
     per_device_train_batch_size=7,  # batch size per device
     gradient_accumulation_steps=4,  # effective batch size is 7 * 4 = 28
     gradient_checkpointing=True,
-    gradient_checkpointing_kwargs={'use_reentrant': True},
+    gradient_checkpointing_kwargs={"use_reentrant": True},
     optim="paged_adamw_32bit",
     logging_steps=1,  # log the training error every step
     save_strategy="epoch",  # save checkpoints at the end of each epoch
@@ -96,7 +105,7 @@ args = TrainingArguments(
     max_grad_norm=1.0,
     warmup_steps=100,
     lr_scheduler_type="constant",
-    disable_tqdm=True
+    disable_tqdm=True,
 )
 
 # Configure and run the trainer

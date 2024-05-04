@@ -66,7 +66,8 @@ function install_python_tools {
     local env_name="course-env"
 
     run_as_user $DEFAULT_USER $CONDA_PATH env update -n $env_name -f $env_file || run_as_user $DEFAULT_USER $CONDA_PATH env create -f $env_file
-    run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name; $CONDA_PATH install ipykernel --yes; python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)'; $CONDA_PATH install torch --yes; pip install packaging ninja; MAX_JOBS=2 pip install --verbose flash-attn --no-build-isolation"
+    # run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name; $CONDA_PATH install ipykernel --yes; python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)'; $CONDA_PATH install torch --yes; pip install packaging ninja; MAX_JOBS=2 pip install --verbose flash-attn --no-build-isolation"
+    run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name; $CONDA_PATH install ipykernel --yes; python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)'; $CONDA_PATH install torch --yes; pip install packaging ninja; pip install --verbose flash_attn-2.5.8-cp312-cp312-linux_x86_64.whl --no-build-isolation"
 }
 
 # Clone and setup a course repository

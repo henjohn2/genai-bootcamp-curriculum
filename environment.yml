@@ -30,3 +30,4 @@ dependencies:
     - packaging
     - ninja
     - huggingface_hub
+    - pgvector

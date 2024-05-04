@@ -87,7 +87,8 @@ function install_python_tools {
     python -m ipykernel install --user --name $env_name --display-name "Python 3.12 ($env_name)"
     $CONDA_PATH install torch --yes
     pip install packaging ninja
-    pip install --verbose flash-attn --no-build-isolation
+    #pip install --verbose flash-attn --no-build-isolation
+    pip install --verbose flash_attn-2.5.8-cp312-cp312-linux_x86_64.whl --no-build-isolation
 }
 
 
