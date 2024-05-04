@@ -1,8 +1,13 @@
 #!/bin/bash
 # This script is tailored for setup on an Amazon EC2 Ubuntu instance.
-
+HOME="/home/ubuntu"
+cd $HOME
 # Absolute path to the Conda executable
 CONDA_PATH="$HOME/miniconda/bin/conda"
+
+#use the packages that are already resolved
+use_locked_env="yes"
+
 
 # Function to parse command-line options
 function parse_args {
@@ -16,7 +21,7 @@ function parse_args {
 
 # Load company-specific configurations from company.yml if it exists
 function setup_env_variables {
-    COMPANY_FILE="company.yml"
+    COMPANY_FILE="$HOME/genai-bootcamp-curriculum/company.yml"
     if [ -f "$COMPANY_FILE" ]; then
         export $(python3 -c "import yaml; env_vars = yaml.safe_load(open('$COMPANY_FILE')); print(' '.join([f'{k.upper()}={v}' for k, v in env_vars.items()]))")
     else
@@ -99,9 +104,9 @@ function setup_repository {
     cd $REPO_DIR
     git checkout improvements
 
-    local env_file="environment.yml"
+    local env_file="$HOME/genai-bootcamp-curriculum/environment.yml"
     if [ "$use_locked_env" = "yes" ]; then
-        env_file="locked-environment.yml"
+        env_file="$HOME/genai-bootcamp-curriculum/locked-environment.yml"
     fi
     local env_name="course-env"
 
@@ -183,10 +188,11 @@ function start_jupyter {
 # Main function to run all setups
 function main {
     parse_args "$@"
-    setup_env_variables
     update_system
-    install_python_tools
     setup_repository
+    install_python_tools
+    
+    setup_env_variables
     download_data
     start_jupyter
 }
