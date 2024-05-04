@@ -4,7 +4,7 @@
 # cd $HOME
 # Absolute path to the Conda executable
 CONDA_PATH="$HOME/miniconda/bin/conda"
-
+cd $HOME
 #use the packages that are already resolved
 use_locked_env="yes"
 
