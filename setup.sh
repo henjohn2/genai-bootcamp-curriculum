@@ -88,7 +88,7 @@ function install_python_tools {
     $CONDA_PATH install torch --yes
     pip install packaging ninja
     #pip install --verbose flash-attn --no-build-isolation
-    pip install --verbose flash_attn-2.5.8-cp312-cp312-linux_x86_64.whl --no-build-isolation
+    pip install --verbose flash_attn-2.5.8-cp312-cp312-linux_x86_64_aws.whl --no-build-isolation
 }
 
 
