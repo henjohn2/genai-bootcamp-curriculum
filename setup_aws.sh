@@ -36,7 +36,7 @@ function setup_env_variables {
 # Update package lists and install essential packages
 function update_system {
     sudo apt-get update
-    sudo apt-get install -y curl unzip wget git
+    sudo apt-get install -y curl unzip wget git git-lfs
 
     # Install AWS CLI if not present
     if ! command -v aws &> /dev/null; then
@@ -68,7 +68,7 @@ function install_python_tools {
 
     run_as_user $DEFAULT_USER $CONDA_PATH env update -n $env_name -f $env_file || run_as_user $DEFAULT_USER $CONDA_PATH env create -f $env_file
     # run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name; $CONDA_PATH install ipykernel --yes; python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)'; $CONDA_PATH install torch --yes; pip install packaging ninja; MAX_JOBS=2 pip install --verbose flash-attn --no-build-isolation"
-    run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name && $CONDA_PATH install ipykernel --yes && python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)' && $CONDA_PATH install torch --yes && pip install packaging ninja && pip install --verbose /home/$DEFAULT_USER/genai-bootcamp-curriculum/flash_attn-2.5.8-cp312-cp312-linux_x86_64_aws.whl --no-build-isolation"
+    run_as_user $DEFAULT_USER bash -c "source /home/$DEFAULT_USER/miniconda/bin/activate $env_name && $CONDA_PATH install ipykernel --yes && python -m ipykernel install --user --name $env_name --display-name 'Python 3.12 ($env_name)' && pip install packaging ninja && pip install --verbose /home/$DEFAULT_USER/genai-bootcamp-curriculum/flash_attn-2.5.8-cp312-cp312-linux_x86_64.whl --no-build-isolation"
 }
 
 # Clone and setup a course repository
@@ -78,7 +78,7 @@ function setup_repository {
         run_as_user $DEFAULT_USER git clone https://github.com/henjohn2/genai-bootcamp-curriculum.git $REPO_DIR
     fi
 
-    run_as_user $DEFAULT_USER bash -c "cd $REPO_DIR && git checkout improvements"
+    run_as_user $DEFAULT_USER bash -c "cd $REPO_DIR && git checkout improvements && git-lfs pull"
 }
 
 # Download data from S3

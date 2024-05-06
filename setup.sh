@@ -31,7 +31,7 @@ function setup_env_variables {
 # Update package lists and install essential packages
 function update_system {
     sudo apt-get update
-    sudo apt-get install -y curl unzip wget git
+    sudo apt-get install -y curl unzip wget git git-lfs
 
     # Install AWS CLI if not present
     if ! command -v aws &> /dev/null; then
@@ -88,7 +88,7 @@ function install_python_tools {
     $CONDA_PATH install torch --yes
     pip install packaging ninja
     #pip install --verbose flash-attn --no-build-isolation
-    pip install --verbose flash_attn-2.5.8-cp312-cp312-linux_x86_64_aws.whl --no-build-isolation
+    pip install --verbose $HOME/genai-bootcamp-curriculum/flash_attn-2.5.8-cp312-cp312-linux_x86_64.whl --no-build-isolation
 }
 
 
@@ -103,6 +103,7 @@ function setup_repository {
 
     cd $REPO_DIR
     git checkout improvements
+    git-lfs pull
 
     local env_file="$HOME/genai-bootcamp-curriculum/environment.yml"
     if [ "$use_locked_env" = "yes" ]; then
