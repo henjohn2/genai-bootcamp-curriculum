@@ -12,7 +12,7 @@ Configure as shown in the pictures
 1. Install latest putty software through Software Center if you don't have latest one.
 2. Create putty session using <instance DNS name provided to you>, port # 22 and save it with your preferred name i.e., Training
 3. Add ppk file to session's ssh/auth
-4. Add session's Connection/Proxy - Proxy hostname - web proxy.merck.com and Port - 8080
+4. Add session's Connection/Proxy - Proxy hostname - web proxy.company.com and Port - 1234
 5. Add session's ssh/Tunnels - 
 
 
@@ -58,7 +58,7 @@ S3 commands
 
 # Check if you can access s3 from your instance
 
-$ aws s3 ls s3://merck-genai-lab/
+$ aws s3 ls s3://company-genai-lab/
 
 # If you get aws cli not installed error,  you install it
 
@@ -66,11 +66,11 @@ sudo apt  install awscli
 
 # Check again
 
-aws s3 ls s3://merck-genai-lab/
+aws s3 ls s3://company-genai-lab/
 
 # You can copy the files from s3 to your instance as shown 
-
-aws s3 cp s3://merck-genai-lab/msl-data/MSL-CallNotes-.zip .
+# Use the provided AWS dataset which can be transferred to your EC2 with a similar command.
+aws s3 cp s3://company-genai-lab/task-data/task-notes-.zip .
 
 
 # Helpful Tips for Environments
