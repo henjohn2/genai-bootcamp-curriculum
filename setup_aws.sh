@@ -4,7 +4,7 @@
 # This script is specific to cloud_init although it should work in user directory too
 
 DEFAULT_USER="ubuntu"
-
+REPO_DIR="/home/$DEFAULT_USER/genai-bootcamp-curriculum"
 # Function to run command as a specific user
 function run_as_user {
     local user=$1
@@ -36,7 +36,7 @@ function setup_env_variables {
 # Update package lists and install essential packages
 function update_system {
     sudo apt-get update
-    sudo apt-get install -y curl unzip wget git git-lfs
+    sudo apt-get install -y curl unzip wget git git-lfs docker-compose-plugin
 
     # Install AWS CLI if not present
     if ! command -v aws &> /dev/null; then
@@ -73,7 +73,7 @@ function install_python_tools {
 
 # Clone and setup a course repository
 function setup_repository {
-    REPO_DIR="/home/$DEFAULT_USER/genai-bootcamp-curriculum"
+    
     if [ ! -d "$REPO_DIR" ]; then
         run_as_user $DEFAULT_USER git clone https://github.com/henjohn2/genai-bootcamp-curriculum.git $REPO_DIR
     fi
@@ -122,6 +122,11 @@ function start_jupyter {
         run_as_user $DEFAULT_USER aws s3 cp "$filename" "s3://$COMPANY_S3/${public_hostname}_access_details.txt"
     fi
 }
+function start_docker {
+    run_as_user $DEFAULT_USER bash -c "cd $REPO_DIR && docker compose up -d"
+}
+
+
 
 # Main function to run all setups
 function main {
@@ -132,6 +137,7 @@ function main {
     setup_env_variables
     download_data
     start_jupyter
+    start_docker
 }
 
 main "$@"

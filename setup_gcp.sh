@@ -79,7 +79,7 @@ function setup_env_variables {
 # Update package lists and install essential packages
 function update_system {
     sudo apt-get update
-    sudo apt-get install -y curl unzip wget git git-lfs
+    sudo apt-get install -y curl unzip wget git git-lfs docker-compose-plugin
 }
 
 # Install Python tools and environment
